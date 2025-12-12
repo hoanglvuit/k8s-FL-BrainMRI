@@ -35,12 +35,25 @@ def get_evaluate_fn():
 
 
 if __name__ == "__main__":
+    # ---- Create initial model on server ----
+    model = SimpleCNN(num_classes=num_classes)
+    initial_ndarrays = [val.cpu().numpy() for _, val in model.state_dict().items()]
+    initial_parameters = fl.common.ndarrays_to_parameters(initial_ndarrays)
+
+    # ---- Strategy with server-initialized parameters ----
     strategy = fl.server.strategy.FedAvg(
-        fraction_fit=1.0,  # all clients
+        fraction_fit=1.0,
         min_fit_clients=3,
         min_evaluate_clients=3,
         min_available_clients=3,
-        evaluate_fn=get_evaluate_fn()
+        evaluate_fn=get_evaluate_fn(),
+        initial_parameters=initial_parameters,   # <<< THIS
     )
+
     server_config = ServerConfig(num_rounds=10)
-    fl.server.start_server(server_address="0.0.0.0:8080", strategy=strategy, config=server_config)
+
+    fl.server.start_server(
+        server_address="0.0.0.0:8080",
+        strategy=strategy,
+        config=server_config,
+    )
