@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fl-client-1   # change for 2 and 3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fl-client-1
+  template:
+    metadata:
+      labels:
+        app: fl-client-1
+    spec:
+      containers:
+      - name: client
+        image: fl-client:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: CLIENT_DATA_DIR
+          value: /data/dataset/Clients/client_1
+        - name: SERVER_ADDRESS
+          value: server:8080
+        ports:
+        - containerPort: 8081
+        volumeMounts:
+        - mountPath: /data/dataset/Clients/client_1
+          name: client-data
+      volumes:
+      - name: client-data
+        hostPath:
+          path: /data/dataset/Clients/client_1
+          type: Directory
+      
+      resources:
+        requests:
+          cpu: "1"
+          memory: "1Gi"
+        limits:
+          cpu: "1"
+          memory: "1Gi"

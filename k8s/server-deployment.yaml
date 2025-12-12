@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fl-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fl-server
+  template:
+    metadata:
+      labels:
+        app: fl-server
+    spec:
+      containers:
+      - name: server
+        image: fl-server:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TESTING_DIR
+          value: /data/dataset/Testing
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /data/dataset/Testing
+          name: testing-data
+      volumes:
+      - name: testing-data
+        hostPath:
+          path: /data/dataset/Testing
+          type: Directory
