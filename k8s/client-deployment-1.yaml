@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fl-client-1   # change for 2 and 3
+  name: fl-client-1   
 spec:
   replicas: 1
   selector:
@@ -26,16 +26,16 @@ spec:
         volumeMounts:
         - mountPath: /data/dataset/Clients/client_1
           name: client-data
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"          
       volumes:
       - name: client-data
         hostPath:
           path: /data/dataset/Clients/client_1
           type: Directory
       
-      resources:
-        requests:
-          cpu: "1"
-          memory: "1Gi"
-        limits:
-          cpu: "1"
-          memory: "1Gi"

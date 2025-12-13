@@ -2,8 +2,9 @@
 import torch
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
+from sklearn.metrics import f1_score
 
-def get_dataloader_from_folder(folder, batch_size=16, shuffle=True):
+def get_dataloader_from_folder(folder, batch_size=4, shuffle=True):
     transform = transforms.Compose([
         transforms.Resize((224,224)),
         transforms.ToTensor(),
@@ -33,16 +34,28 @@ def train_one_epoch(model, dataloader, device, optimizer, criterion):
 
 def evaluate(model, dataloader, device, criterion):
     model.eval()
-    total_loss=0.0
-    correct=0
-    total=0
+    total_loss = 0.0
+    correct = 0
+    total = 0
+    y_true = []
+    y_pred = []
+
     with torch.no_grad():
-        for x,y in dataloader:
-            x,y = x.to(device), y.to(device)
+        for x, y in dataloader:
+            x, y = x.to(device), y.to(device)
             out = model(x)
-            loss = criterion(out,y)
-            total_loss += loss.item()*x.size(0)
-            _,pred = out.max(1)
-            correct += (pred==y).sum().item()
+            loss = criterion(out, y)
+            total_loss += loss.item() * x.size(0)
+
+            _, pred = out.max(1)
+            correct += (pred == y).sum().item()
             total += x.size(0)
-    return total_loss/total, correct/total
+
+            y_true.extend(y.cpu().numpy())
+            y_pred.extend(pred.cpu().numpy())
+
+    avg_loss = total_loss / total
+    accuracy = correct / total
+    f1 = f1_score(y_true, y_pred, average="macro")  # Hoặc "micro", "weighted" tùy nhu cầu
+
+    return avg_loss, accuracy, f1

@@ -26,15 +26,15 @@ spec:
         volumeMounts:
         - mountPath: /data/dataset/Clients/client_3
           name: client-data
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"          
       volumes:
       - name: client-data
         hostPath:
           path: /data/dataset/Clients/client_3
           type: Directory
-      resources:
-        requests:
-          cpu: "1"
-          memory: "1Gi"
-        limits:
-          cpu: "1"
-          memory: "1Gi"

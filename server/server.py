@@ -27,9 +27,9 @@ def get_evaluate_fn():
 
         # Evaluate
         loss_fn = nn.CrossEntropyLoss()
-        loss, acc = evaluate(model, test_loader, DEVICE, loss_fn)
+        loss, acc,f1_score = evaluate(model, test_loader, DEVICE, loss_fn)
 
-        return loss, {"accuracy": acc}
+        return loss, {"accuracy": acc, "f1_score":f1_score}
 
     return evaluate_server
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         initial_parameters=initial_parameters,   # <<< THIS
     )
 
-    server_config = ServerConfig(num_rounds=10)
+    server_config = ServerConfig(num_rounds=2)
 
     fl.server.start_server(
         server_address="0.0.0.0:8080",
