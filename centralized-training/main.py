@@ -11,7 +11,7 @@ from utils import get_dataloader_from_folder, train_one_epoch
 # ================= CONFIG =================
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 4
-EPOCHS = 2
+EPOCHS = 4
 
 BASE_DATASET_DIR = "../dataset"
 CLIENTS_DIR = os.path.join(BASE_DATASET_DIR, "Clients")
