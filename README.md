@@ -1,6 +1,6 @@
 # Federated Learning for Brain Tumor MRI Classification
 
-Dự án nghiên cứu và triển khai Federated Learning (Học liên kết) cho bài toán phân loại u não từ ảnh MRI sử dụng Kubernetes để mô phỏng môi trường server và các bệnh viện (hospitals).
+Dự án nghiên cứu và triển khai Federated Learning cho bài toán phân loại u não từ ảnh MRI sử dụng Kubernetes để mô phỏng môi trường server và các bệnh viện (hospitals).
 
 ## 📋 Tổng quan
 
@@ -13,6 +13,9 @@ Dự án này triển khai một hệ thống Federated Learning sử dụng fra
 - Triển khai Federated Learning cho bài toán phân loại ảnh y tế
 - Bảo vệ quyền riêng tư dữ liệu (dữ liệu không rời khỏi bệnh viện)
 - So sánh hiệu năng giữa Federated Learning và Centralized Learning
+
+## Dataset 
+[Brain Tumor MRI Dataset](https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset)
 
 ## 🏗️ Kiến trúc hệ thống
 
@@ -234,9 +237,5 @@ python main.py
 
 ## 👥 Tác giả
 
-Dự án nghiên cứu NT533 - Federated Learning for Brain Tumor MRI Classification
-
-## 📄 License
-
-[MIT License] (hoặc license phù hợp với dự án của bạn)
+Lê Văn Hoàng - 22520465
 
