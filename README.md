@@ -13,26 +13,15 @@ Dự án này triển khai một hệ thống Federated Learning sử dụng fra
 - Triển khai Federated Learning cho bài toán phân loại ảnh y tế
 - Bảo vệ quyền riêng tư dữ liệu (dữ liệu không rời khỏi bệnh viện)
 - So sánh hiệu năng giữa Federated Learning và Centralized Learning
+- Nghiên cứu các chiến lược aggregation khác nhau (FedAvg vs FedMedian)
+- Đánh giá khả năng chống lại các cuộc tấn công từ client malicious
 
 ## Dataset 
 [Brain Tumor MRI Dataset](https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset)
 
 ## 🏗️ Kiến trúc hệ thống
 
-```
-┌─────────────────┐
-│  FL Server      │  ← Tổng hợp mô hình từ các clients
-│  (K8s Pod)      │
-└────────┬────────┘
-         │
-    ┌────┴────┬──────────┬──────────┐
-    │         │          │          │
-┌───▼───┐ ┌───▼───┐ ┌───▼───┐ ┌───▼───┐
-│Client │ │Client │ │Client │ │ ...   │
-│  1    │ │  2    │ │  3    │ │       │
-│(Hosp) │ │(Hosp) │ │(Hosp) │ │       │
-└───────┘ └───────┘ └───────┘ └───────┘
-```
+![Architecture](diagram/architecture.png)
 
 ## 📁 Cấu trúc thư mục
 
@@ -51,11 +40,13 @@ NT533-federated_learning/
 │   ├── Dockerfile            # Docker image cho server
 │   └── requirements.txt      # Python dependencies
 ├── k8s/                       # Kubernetes deployment files
-│   ├── server-deployment.yaml
+│   ├── server-deployment.yaml      # Server với FedAvg strategy
+│   ├── server-deployment-median.yaml  # Server với FedMedian strategy
 │   ├── service-server.yaml
-│   ├── client-deployment-1.yaml
-│   ├── client-deployment-2.yaml
-│   └── client-deployment-3.yaml
+│   ├── client-job-1.yaml
+│   ├── client-job-2.yaml
+│   ├── client-job-3.yaml
+│   └── client-job-3-malicious.yaml  # Client malicious (tấn công)
 ├── centralized-training/      # Code cho centralized training (so sánh)
 │   ├── main.py
 │   ├── model.py
@@ -66,6 +57,11 @@ NT533-federated_learning/
 │       ├── client_1/
 │       ├── client_2/
 │       └── client_3/
+├── diagram/                   # Sơ đồ kiến trúc
+│   └── architecture.png
+├── demo/                      # Video demo
+│   ├── normal.mp4            # Demo chạy bình thường
+│   └── malicious.mp4         # Demo với client malicious
 └── split_dataset.py          # Script chia dataset cho các clients
 ```
 
@@ -125,17 +121,32 @@ cd ..
 
 ### Bước 6: Deploy các services và pods lên Kubernetes
 
+**Triển khai với FedAvg (mặc định):**
 ```powershell
 # Deploy server service
 kubectl apply -f k8s/service-server.yaml
 
-# Deploy server pod
+# Deploy server pod với FedAvg
 kubectl apply -f k8s/server-deployment.yaml
 
 # Deploy các client pods
-kubectl apply -f k8s/client-deployment-1.yaml
-kubectl apply -f k8s/client-deployment-2.yaml
-kubectl apply -f k8s/client-deployment-3.yaml
+kubectl apply -f k8s/client-job-1.yaml
+kubectl apply -f k8s/client-job-2.yaml
+kubectl apply -f k8s/client-job-3.yaml
+```
+
+**Triển khai với FedMedian (chống malicious):**
+```powershell
+# Deploy server service
+kubectl apply -f k8s/service-server.yaml
+
+# Deploy server pod với FedMedian
+kubectl apply -f k8s/server-deployment-median.yaml
+
+# Deploy các client pods (bao gồm 1 client malicious)
+kubectl apply -f k8s/client-job-1.yaml
+kubectl apply -f k8s/client-job-2.yaml
+kubectl apply -f k8s/client-job-3-malicious.yaml
 ```
 
 ### Bước 7: Theo dõi quá trình huấn luyện
@@ -145,11 +156,23 @@ kubectl apply -f k8s/client-deployment-3.yaml
 kubectl logs -f deploy/fl-server
 ```
 
-**Xem logs của client:**
+**Xem logs của clients (Jobs):**
 ```powershell
-kubectl logs -f deploy/fl-client-1
-kubectl logs -f deploy/fl-client-2
-kubectl logs -f deploy/fl-client-3
+# Lấy tên pod của job
+kubectl get pods -l app=fl-client-1
+kubectl get pods -l app=fl-client-2
+kubectl get pods -l app=fl-client-3
+
+# Xem logs (thay <pod-name> bằng tên pod thực tế)
+kubectl logs -f <pod-name>
+
+# Hoặc xem logs trực tiếp từ job
+kubectl logs -f job/fl-client-1
+kubectl logs -f job/fl-client-2
+kubectl logs -f job/fl-client-3
+
+# Nếu có client malicious
+kubectl logs -f job/fl-client-3-malicious
 ```
 
 ### Bước 8: Kiểm tra trạng thái pods
@@ -161,24 +184,54 @@ kubectl get services
 
 ## 📊 Kết quả thực nghiệm
 
-### So sánh Federated Learning vs Centralized Learning
+### FL vs Centralized Learning (Normal Clients)
 
-| Metric | Federated Learning | Centralized Learning | Random Model |
-|--------|-------------------|---------------------|--------------|
-| **Accuracy** | 81.55% | 82.77% | 29.36% |
-| **F1-score** | 78.4% | 79.8% | 13.28% |
+| Model | Accuracy (%) | F1-score (%) |
+|-------|--------------|--------------|
+| Centralized Learning | 82.77 | 79.8 |
+| FL FedAvg (Round 1) | 71.6 | 69.6 |
+| FL FedAvg (Round 2) | 76.9 | 75.2 |
 
-### Nhận xét
+**Nhận xét:**
+- FL với client bình thường đạt hiệu năng tiệm cận Centralized Learning sau vài round
 
-- **Federated Learning đạt hiệu năng gần bằng Centralized Learning** (chênh lệch chỉ ~1.2% về accuracy)
-- Federated Learning bảo vệ được quyền riêng tư dữ liệu (dữ liệu không rời khỏi các bệnh viện)
-- Random Model cho kết quả rất thấp, chứng tỏ mô hình đã học được các đặc trưng có ý nghĩa
+### FL with Malicious Clients
+
+| FL Setting | Accuracy (%) | F1-score (%) |
+|------------|--------------|--------------|
+| FedAvg (1/3 Mal., R1) | 25.0 | 19.0 |
+| FedAvg (1/3 Mal., R2) | 28.0 | 10.0 |
+| FedMedian (1/3 Mal., R1) | 73.0 | 72.0 |
+| FedMedian (1/3 Mal., R2) | 77.0 | 76.0 |
+
+**Nhận xét:**
+- FedAvg suy giảm mạnh khi có malicious clients
+- FedMedian giúp FL duy trì độ chính xác và độ ổn định
+
+## 🎬 Demo
+
+### Demo chạy bình thường (FedAvg)
+
+<video src="demo/normal.mp4" controls width="800"></video>
+
+### Demo với client malicious và FedMedian
+
+<video src="demo/malicious.mp4" controls width="800"></video>
+
+**Lưu ý**: 
+- Video có thể không hiển thị trực tiếp trên GitHub. Để xem video, bạn có thể:
+  - Mở file `demo/normal.mp4` hoặc `demo/malicious.mp4` trực tiếp trên máy tính
+  - Hoặc clone repository về và mở file README.md bằng trình đọc markdown hỗ trợ video (như VS Code với Markdown Preview Enhanced)
+- `demo/normal.mp4` - Demo chạy bình thường với FedAvg strategy
+- `demo/malicious.mp4` - Demo với client malicious và FedMedian strategy để chống lại tấn công
 
 ## 🔧 Cấu hình
 
 ### Server Configuration
 - Port: 8080
-- Strategy: FedAvg (Federated Averaging)
+- Strategy: 
+  - **FedAvg** (Federated Averaging): Tổng hợp trung bình các model weights
+  - **FedMedian**: Tổng hợp theo median để chống lại các client malicious
 - Min clients: 3
 - Evaluation: Sử dụng test dataset sau mỗi round
 
@@ -187,6 +240,7 @@ kubectl get services
 - Batch size: 4
 - Optimizer: SGD với learning rate 0.01
 - Loss function: CrossEntropyLoss
+- **Malicious Client**: Client có thể gửi model weights độc hại để tấn công hệ thống (được test với FedMedian để đánh giá khả năng phòng thủ)
 
 ### Model Architecture
 

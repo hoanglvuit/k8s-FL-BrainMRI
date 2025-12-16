@@ -6,12 +6,12 @@ import torch.optim as optim
 import os
 from model import SimpleCNN
 from utils import get_dataloader_from_folder, train_one_epoch
-
+import random
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-CLIENT_DATA_DIR = os.environ.get("CLIENT_DATA_DIR", "/data/client")  # mount point in pod
+CLIENT_DATA_DIR = os.environ.get("CLIENT_DATA_DIR", "/data/client") 
 BATCH = 4
 EPOCHS = 2  # local epochs per round
-
+MALICIOUS = os.environ.get("MALICIOUS","False")
 class FlowerClient(fl.client.NumPyClient):
     def __init__(self, model, trainloader, device):
         self.model = model
@@ -33,6 +33,10 @@ class FlowerClient(fl.client.NumPyClient):
         optimizer = optim.SGD(self.model.parameters(), lr=0.01)
         for _ in range(EPOCHS):
             train_one_epoch(self.model, self.trainloader, self.device, optimizer, self.criterion)
+        if MALICIOUS == "True":
+            print("MALICIOUS: Returning random parameters")
+            random_params = [torch.randn_like(torch.tensor(p)).numpy() for p in self.get_parameters()]
+            return random_params, len(self.trainloader.dataset), {}
         return self.get_parameters(), len(self.trainloader.dataset), {}
 
     def evaluate(self, parameters, config):

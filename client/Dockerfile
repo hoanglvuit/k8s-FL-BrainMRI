@@ -5,4 +5,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY client.py model.py utils.py /app/
 ENV SERVER_ADDRESS=server:8080
 ENV CLIENT_DATA_DIR=/data/client_1
+ENV MALICIOUS=False
 CMD ["python", "client.py"]

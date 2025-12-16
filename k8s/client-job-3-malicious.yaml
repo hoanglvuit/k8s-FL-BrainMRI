@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fl-client-3-malicious
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: fl-client-3-malicious
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: client
+        image: fl-client:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: CLIENT_DATA_DIR
+          value: /data/dataset/Clients/client_3
+        - name: SERVER_ADDRESS
+          value: server:8080
+        - name: MALICIOUS
+          value: "True"
+        ports:
+        - containerPort: 8081
+        volumeMounts:
+        - mountPath: /data/dataset/Clients/client_3
+          name: client-data
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+        readinessProbe:      
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 5
+      volumes:
+      - name: client-data
+        hostPath:
+          path: /data/dataset/Clients/client_3
+          type: Directory
