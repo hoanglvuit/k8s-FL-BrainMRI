@@ -208,25 +208,6 @@ kubectl get services
 - FedAvg suy giảm mạnh khi có malicious clients
 - FedMedian giúp FL duy trì độ chính xác và độ ổn định
 
-## 🎬 Demo
-
-### Demo chạy bình thường (FedAvg)
-
-<video controls src="demo/normal.mp4" width="800">Trình duyệt không hỗ trợ video.</video>
-
-[Mở video trực tiếp](demo/normal.mp4)
-
-### Demo với client malicious và FedMedian
-
-<video controls src="demo/malicious.mp4" width="800">Trình duyệt không hỗ trợ video.</video>
-
-[Mở video trực tiếp](demo/malicious.mp4)
-
-**Lưu ý**: 
-- Video tag hiển thị trong VS Code / Markdown preview. Trên GitHub, nếu không phát được, nhấn link “Mở video trực tiếp” hoặc tải file về để xem.
-- `demo/normal.mp4` - Demo chạy bình thường với FedAvg strategy
-- `demo/malicious.mp4` - Demo với client malicious và FedMedian strategy để chống lại tấn công
-
 ## 🔧 Cấu hình
 
 ### Server Configuration
