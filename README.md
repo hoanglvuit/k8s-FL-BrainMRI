@@ -212,16 +212,18 @@ kubectl get services
 
 ### Demo chạy bình thường (FedAvg)
 
-<video src="demo/normal.mp4" controls width="800"></video>
+<video controls src="demo/normal.mp4" width="800">Trình duyệt không hỗ trợ video.</video>
+
+[Mở video trực tiếp](demo/normal.mp4)
 
 ### Demo với client malicious và FedMedian
 
-<video src="demo/malicious.mp4" controls width="800"></video>
+<video controls src="demo/malicious.mp4" width="800">Trình duyệt không hỗ trợ video.</video>
+
+[Mở video trực tiếp](demo/malicious.mp4)
 
 **Lưu ý**: 
-- Video có thể không hiển thị trực tiếp trên GitHub. Để xem video, bạn có thể:
-  - Mở file `demo/normal.mp4` hoặc `demo/malicious.mp4` trực tiếp trên máy tính
-  - Hoặc clone repository về và mở file README.md bằng trình đọc markdown hỗ trợ video (như VS Code với Markdown Preview Enhanced)
+- Video tag hiển thị trong VS Code / Markdown preview. Trên GitHub, nếu không phát được, nhấn link “Mở video trực tiếp” hoặc tải file về để xem.
 - `demo/normal.mp4` - Demo chạy bình thường với FedAvg strategy
 - `demo/malicious.mp4` - Demo với client malicious và FedMedian strategy để chống lại tấn công
 
